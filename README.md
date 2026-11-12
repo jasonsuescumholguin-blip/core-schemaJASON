@@ -13,7 +13,7 @@ single source of truth.
 
 ```
 data/
-  schema.csv      ← SOURCE OF TRUTH — the 44 variables (edit here)
+  schema.csv      ← SOURCE OF TRUTH — the 47 variables (edit here)
   groups.csv      ← SOURCE OF TRUTH — the 4 groups + their colours (edit here)
 build/
   build.py        ← compiler: CSV → terms.js + palette.css
