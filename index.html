@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PTFI Core Metadata Schema — Reference</title>
-  <meta name="description" content="Reference documentation for the Periodic Table of Food Initiative (PTFI) Core Metadata Schema — 47 elements across four categories describing every data point collected for food samples.">
+  <meta name="description" content="Reference documentation for the Periodic Table of Food Initiative (PTFI) Core Metadata Schema — metadata elements describing every data point collected for food samples.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -40,10 +40,10 @@
       <h1>The PTFI Core Metadata Schema</h1>
       <p class="lead">A harmonized, FAIR data dictionary describing every metadata element collected for a food sample — from where and when it was gathered, through its biology and laboratory processing, to the persistent ontology identifiers that make it interoperable across the world's food composition data.</p>
       <div class="meta">
-        <span class="chip"><b id="statTotal">47</b> metadata elements</span>
-        <span class="chip"><b>4</b> categories</span>
-        <span class="chip"><b id="statReq">—</b> required at intake</span>
-        <span class="chip">Schema <b>v8.0.0</b> · Rev. 2026-06-26</span>
+        <span class="chip"><b id="statTotal">—</b> metadata elements</span>
+        <span class="chip"><b id="statGroups">—</b> categories</span>
+        <span class="chip"><b id="statReq">—</b> required fields</span>
+        <span class="chip">Schema <b id="schemaVersion">—</b> · Built <span id="buildDate">—</span></span>
       </div>
     </div>
   </section>
@@ -52,7 +52,7 @@
   <div class="schema">
     <div class="schema-frame">
       <div class="schema-cap">
-        <h2>The schema at a glance — <b>Study → Specimen → Sample → Aliquot</b></h2>
+        <h2>The schema at a glance — <b id="categorySequence">Metadata categories</b></h2>
         <span class="hint">Click any category to jump to its elements</span>
       </div>
       <div class="facet-grid" id="facetGrid"></div>

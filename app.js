@@ -94,7 +94,7 @@
   /* ---------- Facet sections ---------- */
   function renderContent() {
     $("#content").innerHTML =
-      `<div class="intro-note"><b>How to read this page.</b> The PTFI Core Metadata Schema comprises <b>44 elements</b> across four categories that follow the food-sampling workflow — from study and field collection to laboratory processing. Each element below lists its definition, requirement level, format, controlled values, the external standard it maps to (FoodOn, NCBI Taxonomy, ISO), worked examples, and a curation note drawn from the PTFI SOPs.</div>` +
+      `<div class="intro-note"><b>How to read this page.</b> The PTFI Core Metadata Schema comprises <b>${TERMS.length} elements</b> across ${FACETS.length} categories that follow the food-sampling workflow — from study and field collection to laboratory processing. Each element below lists its definition, requirement level, format, controlled values, the external standard it maps to (FoodOn, NCBI Taxonomy, ISO), worked examples, and a curation note drawn from the PTFI SOPs.</div>` +
       FACETS.map((f) => {
         const terms = TERMS.filter((t) => t.facet === f.id);
         return `<section class="facet-sec" id="facet-${f.id}" data-facet-sec="${f.id}" style="${facetVars(f.id)}">
@@ -198,6 +198,13 @@
     });
     document.querySelectorAll("[data-csv]").forEach((b) => b.addEventListener("click", downloadCSV));
 
+    // Counts follow the generated CSV data, not a fixed schema revision.
+    $("#statGroups").textContent = FACETS.length;
+    $("#schemaVersion").textContent = `v${VER.schema}`;
+    $("#buildDate").textContent = VER.revised;
+    $("#categorySequence").textContent = FACETS.map(f => f.name.replace(/ metadata$/i, "")).join(" → ");
+    document.querySelector('meta[name="description"]').content =
+      `Reference documentation for the PTFI Core Metadata Schema — ${TERMS.length} elements across ${FACETS.length} categories.`;
     // stat counts
     $("#statTotal").textContent = TERMS.length;
     $("#statReq").textContent = TERMS.filter((t) => t.required === "required").length;

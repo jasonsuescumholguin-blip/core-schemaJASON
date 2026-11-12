@@ -6,6 +6,8 @@ name: Build and deploy site
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch: {}
 
 # Least-privilege: read the repo, publish to Pages. No write access to contents.
@@ -16,7 +18,7 @@ permissions:
 
 # Let a running deploy finish; don't pile up overlapping ones.
 concurrency:
-  group: pages
+  group: pages-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -32,12 +34,17 @@ jobs:
       - name: Generate terms.js + palette.css from data/
         run: python build/build.py
 
+      - name: Check schema and page consistency
+        run: python build/test_build.py
+
       - name: Upload site
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: "."
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:

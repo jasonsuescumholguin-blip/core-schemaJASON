@@ -35,8 +35,9 @@ Only the two files in `data/` are edited. Everything below them is produced by
   number of columns in the schema grid (`--group-count`). Recolour or add a
   group by editing one row — no CSS is touched by hand.
 
-`index.html`, `app.js` and `styles.css` carry the design and never need to
-change when the schema changes.
+`index.html`, `app.js` and `styles.css` carry the design. Counts and category
+labels follow the generated data. Structural changes or new field types may
+still require code changes.
 
 ## How to update
 
@@ -80,3 +81,26 @@ Every variable lives under the PTFI namespace
 established standard (`skos:exactMatch` for identical concepts, `skos:closeMatch`
 for near ones). Lab-processing fields with no external equivalent are original
 PTFI terms. Borrowed vocabularies are referenced, never re-hosted.
+
+
+## Current schema and review workflow
+
+The schema contains 47 variables: Study (4), Specimen (27), Sample (14), and
+Aliquot (2). Use unique element IDs and exact lowercase group IDs. The page
+calculates its totals and category sequence from the generated data.
+
+Collection Location Level 0 keeps the ID `collection_country`. Levels 1–5
+use `collection_location_level_1` through `collection_location_level_5`.
+They replace `collection_admin_area` and `collection_locality`; do not assume
+an automatic migration of existing sample records between these fields.
+
+Use only `Required`, `Conditional`, `Optional`, and `Curator-assigned`.
+Contributor defaults are documented in `curation_note`, not new obligations:
+ABS defaults to 4 and curation status to required unless a curator has already
+assigned a value. `specimen_id` remains PTFI-assigned and has no default value.
+Save comma-delimited CSV files as UTF-8 without a BOM for the current compiler.
+
+Pull requests run the schema tests and build without deploying. Merging into
+`main` runs the tests again and publishes through GitHub Pages. The displayed
+Built date is the generation date, not the normative SOP revision date.
+Run `python build/test_build.py` before submitting schema changes.
