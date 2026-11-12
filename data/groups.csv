@@ -1,5 +1,6 @@
 id,name,role,blurb,fill,accent,ink,order
-study,Study metadata,Collection metadata,Identifiers and people behind the collection study.,#E6F1FB,#0C447C,#0C447C,1
-specimen,Specimen metadata,Collection metadata,"The biological entity, collected and characterized in the field.",#E1F5EE,#085041,#085041,2
-sample,Sample metadata,Laboratory metadata,Derived from a specimen by preparation or anatomical part.,#FAEEDA,#B97B29,#8A5A18,3
-aliquot,Aliquot metadata,Laboratory metadata,The unit actually analyzed.,#EEEDFE,#3C3489,#3C3489,4
+specimen,Specimen metadata,Collection metadata,"Food identity, origin, preparation, and quantity of the specimen.",#E1F5EE,#085041,#085041,1
+collection,Food Collection metadata,Collection metadata,"Collection event, geographic location, collector, and collection conditions.",#E6F1FB,#0C447C,#0C447C,2
+sample,Sample Intake metadata,Laboratory metadata,"Sample identity, preparation, weights, and intake processing.",#FAEEDA,#B97B29,#8A5A18,3
+management,Sample management metadata,PTFI curation team,"Study context, internally assigned identifiers, and aliquot weight.",#EEEDFE,#3C3489,#3C3489,4
+ontology,Ontology References,PTFI curation team,"Ontology identifiers, access and benefit-sharing status, and curation status.",#FCE8EF,#9D2754,#792041,5

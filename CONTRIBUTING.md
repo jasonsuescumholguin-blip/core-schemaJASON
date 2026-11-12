@@ -14,7 +14,7 @@ row. Columns:
 |---|---|
 | `element_id` | snake_case key, e.g. `collection_country` |
 | `name` | human label shown on the card |
-| `group` | `Study`, `Specimen`, `Sample`, or `Aliquot` |
+| `group` | a group ID from groups.csv: `specimen`, `collection`, `sample`, `management`, or `ontology` |
 | `obligation` | `Required` / `Conditional` / `Optional` / `Curator-assigned` |
 | `datatype`, `occurrence`, `format` | value type, single/multiple, format hint |
 | `value_scheme` | standard for the **value** (ISO 8601, Unit Ontology, FoodOn…). The link is added automatically. |
@@ -53,3 +53,25 @@ locally just for preview. Opening `index.html` with `file://` won't load the dat
 - Settings → Pages → Source → **GitHub Actions**.
   (No "read and write" Actions permission is needed — deployment uses the
   least-privilege Pages permission instead.)
+
+
+## SOP-aligned categories
+
+The schema has 47 fields in five groups: Specimen (12), Food Collection (14),
+Sample Intake (10), Sample management (6), and Ontology References (5).
+Use exact group IDs in schema.csv. Group and element IDs must be unique,
+lowercase identifiers; group colours must be six-digit hex values.
+Save CSVs as UTF-8 (an Excel BOM is accepted), with the existing column headers.
+Invalid references or obligations now fail the build instead of silently hiding fields.
+
+Keep Required, Optional, Conditional, and Curator-assigned as the only obligations.
+ABS, specimen_id, and curation_status remain Curator-assigned. Contributor defaults
+(ABS: 4; curation status: required) are instructions in curation_note, not obligations.
+Collection Location Level 0 retains collection_country; levels 1–5 use
+collection_location_level_1 through collection_location_level_5. These replace
+collection_admin_area and collection_locality; existing sample records need an
+explicit geographic mapping rather than an automatic rename.
+
+Page anchors use element_id. Previous display-name anchors are redirected where
+the corresponding field still exists. Counts and group colours are generated;
+the displayed Built date is the build date, not a normative SOP revision date.

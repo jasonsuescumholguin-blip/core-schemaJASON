@@ -16,6 +16,32 @@
   };
   const facetVars = (f) => `--fc-fill:var(--${f}-fill);--fc-acc:var(--${f}-acc);--fc-ink:var(--${f}-ink)`;
 
+  // Preserve links based on the old display names when names change.
+  const previousNames = {
+    common_name_language: "Common Name Language Code",
+    specimen_organism_name: "Specimen Organism Name",
+    specimen_breed_cultivar: "Specimen Breed or Cultivar",
+    specimen_unit_type: "Specimen Unit Type",
+    specimen_quantity_size: "Specimen Quantity Size",
+    specimen_quantity_size_unit: "Specimen Quantity Size Unit",
+    specimen_temperature: "Specimen Temperature at Collection",
+    specimen_procurement_type: "Procurement Type",
+    collection_country: "Collection Country",
+    specimen_id: "Specimen ID", sample_id: "Sample ID", aliquot_id: "Aliquot ID",
+    sample_wet_weight: "Sample Wet Weight", sample_dry_weight: "Sample Dry Weight",
+    aliquot_weight: "Aliquot Weight"
+  };
+  function resolveLegacyHash() {
+    const hash = location.hash.slice(1);
+    const groupAliases = { "facet-study": "facet-management", "facet-aliquot": "facet-management" };
+    const term = TERMS.find(t => slug(t.name) === hash || (previousNames[t.key] && slug(previousNames[t.key]) === hash));
+    const target = groupAliases[hash] || (term && term.key);
+    if (target && target !== hash) {
+      history.replaceState(null, "", `#${target}`);
+      document.getElementById(target)?.scrollIntoView();
+    }
+  }
+
   /* ---------- Schema map (rebuilt Figure 1) ---------- */
   function renderSchema() {
     const grid = $("#facetGrid");
@@ -44,7 +70,7 @@
       const terms = TERMS.filter((t) => t.facet === f.id);
       return `<li class="sb-group" data-facet="${f.id}">
         <a class="sb-facet" href="#facet-${f.id}"><i style="background:var(--${f.id}-acc)"></i>${esc(f.name)}</a>
-        <ul>${terms.map((t) => `<li><a href="#${slug(t.name)}" data-term>${esc(t.name)}</a></li>`).join("")}</ul>
+        <ul>${terms.map((t) => `<li><a href="#${t.key}" data-term>${esc(t.name)}</a></li>`).join("")}</ul>
       </li>`;
     }).join("");
 
@@ -62,6 +88,7 @@
     rows.push(`<tr><th>Category</th><td>${esc(f.name)}</td></tr>`);
     rows.push(`<tr><th>Requirement</th><td>${esc(REQ_LABEL[t.required])}</td></tr>`);
     rows.push(`<tr><th>Data type</th><td>${esc(t.type)}</td></tr>`);
+    if (t.occurrence) rows.push(`<tr><th>Occurrence</th><td>${esc(t.occurrence)}</td></tr>`);
     if (t.format) rows.push(`<tr><th>Format</th><td><span class="mono">${esc(t.format)}</span></td></tr>`);
     if (t.values && t.values.length)
       rows.push(`<tr><th>Allowed values</th><td><div class="vals">${t.values.map((v) => `<span class="v">${esc(v)}</span>`).join("")}</div></td></tr>`);
@@ -73,7 +100,7 @@
     if (t.examples && t.examples.length)
       rows.push(`<tr><th>Examples</th><td><div class="ex">${t.examples.map((e) => `<span class="e">${esc(e)}</span>`).join("")}</div></td></tr>`);
 
-    const id = slug(t.name);
+    const id = t.key;
     return `<article class="term" id="${id}" data-term-card data-name="${esc(t.name.toLowerCase())}" data-facet="${t.facet}" data-req="${t.required}" data-search="${esc((t.name + " " + t.definition + " " + (t.values || []).join(" ") + " " + (t.curation || "")).toLowerCase())}" style="${facetVars(t.facet)}">
       <div class="term-head">
         <div class="th-main">
@@ -94,7 +121,7 @@
   /* ---------- Facet sections ---------- */
   function renderContent() {
     $("#content").innerHTML =
-      `<div class="intro-note"><b>How to read this page.</b> The PTFI Core Metadata Schema comprises <b>44 elements</b> across four categories that follow the food-sampling workflow — from study and field collection to laboratory processing. Each element below lists its definition, requirement level, format, controlled values, the external standard it maps to (FoodOn, NCBI Taxonomy, ISO), worked examples, and a curation note drawn from the PTFI SOPs.</div>` +
+      `<div class="intro-note"><b>How to read this page.</b> The PTFI Core Metadata Schema comprises <b>${TERMS.length} elements</b> across ${FACETS.length} categories that follow the food-sampling workflow — from study and field collection to laboratory processing. Each element below lists its definition, requirement level, format, controlled values, the external standard it maps to (FoodOn, NCBI Taxonomy, ISO), worked examples, and a curation note drawn from the PTFI SOPs.</div>` +
       FACETS.map((f) => {
         const terms = TERMS.filter((t) => t.facet === f.id);
         return `<section class="facet-sec" id="facet-${f.id}" data-facet-sec="${f.id}" style="${facetVars(f.id)}">
@@ -106,7 +133,7 @@
             </div>
             <p>${esc(f.blurb)}</p>
           </div>
-          <nav class="term-index">${terms.map((t) => `<a href="#${slug(t.name)}">${esc(t.name)}</a>`).join("")}</nav>
+          <nav class="term-index">${terms.map((t) => `<a href="#${t.key}">${esc(t.name)}</a>`).join("")}</nav>
           ${terms.map(termCard).join("")}
         </section>`;
       }).join("") +
@@ -156,13 +183,13 @@
 
   /* ---------- CSV export ---------- */
   function toCSV() {
-    const cols = ["Element ID", "Element", "Facet", "Requirement", "Data type", "Format", "Definition", "Allowed values", "Maps to", "Interoperability", "Examples", "Curation note"];
+    const cols = ["Element ID", "Element", "Facet", "Requirement", "Data type", "Occurrence", "Format", "Definition", "Allowed values", "Maps to", "Interoperability", "Examples", "Curation note"];
     const q = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
     const lines = [cols.map(q).join(",")];
     TERMS.forEach((t) => {
       const f = FACETS.find((x) => x.id === t.facet);
       lines.push([
-        t.key || "", t.name, f.name, REQ_LABEL[t.required], t.type, t.format || "",
+        t.key || "", t.name, f.name, REQ_LABEL[t.required], t.type, t.occurrence || "", t.format || "",
         t.definition, (t.values || []).join("; "),
         (t.mapsTo || []).map((m) => m.label + " <" + m.href + ">").join("; "),
         t.standard ? (t.standard.term + " (" + t.standard.match + " match)") : "PTFI original",
@@ -198,6 +225,11 @@
     });
     document.querySelectorAll("[data-csv]").forEach((b) => b.addEventListener("click", downloadCSV));
 
+    resolveLegacyHash();
+    window.addEventListener("hashchange", resolveLegacyHash);
+    $("#statGroups").textContent = FACETS.length;
+    $("#schemaVersion").textContent = `v${VER.schema}`;
+    $("#buildDate").textContent = VER.revised;
     // stat counts
     $("#statTotal").textContent = TERMS.length;
     $("#statReq").textContent = TERMS.filter((t) => t.required === "required").length;

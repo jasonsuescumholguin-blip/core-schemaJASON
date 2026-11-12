@@ -13,8 +13,8 @@ single source of truth.
 
 ```
 data/
-  schema.csv      ← SOURCE OF TRUTH — the 44 variables (edit here)
-  groups.csv      ← SOURCE OF TRUTH — the 4 groups + their colours (edit here)
+  schema.csv      ← SOURCE OF TRUTH — the 47 variables (edit here)
+  groups.csv      ← SOURCE OF TRUTH — the 5 groups + their colours (edit here)
 build/
   build.py        ← compiler: CSV → terms.js + palette.css
 terms.js          ← GENERATED at deploy time — not stored in the repo
@@ -80,3 +80,25 @@ Every variable lives under the PTFI namespace
 established standard (`skos:exactMatch` for identical concepts, `skos:closeMatch`
 for near ones). Lab-processing fields with no external equivalent are original
 PTFI terms. Borrowed vocabularies are referenced, never re-hosted.
+
+
+## SOP-aligned categories
+
+The schema has 47 fields in five groups: Specimen (12), Food Collection (14),
+Sample Intake (10), Sample management (6), and Ontology References (5).
+Use exact group IDs in schema.csv. Group and element IDs must be unique,
+lowercase identifiers; group colours must be six-digit hex values.
+Save CSVs as UTF-8 (an Excel BOM is accepted), with the existing column headers.
+Invalid references or obligations now fail the build instead of silently hiding fields.
+
+Keep Required, Optional, Conditional, and Curator-assigned as the only obligations.
+ABS, specimen_id, and curation_status remain Curator-assigned. Contributor defaults
+(ABS: 4; curation status: required) are instructions in curation_note, not obligations.
+Collection Location Level 0 retains collection_country; levels 1–5 use
+collection_location_level_1 through collection_location_level_5. These replace
+collection_admin_area and collection_locality; existing sample records need an
+explicit geographic mapping rather than an automatic rename.
+
+Page anchors use element_id. Previous display-name anchors are redirected where
+the corresponding field still exists. Counts and group colours are generated;
+the displayed Built date is the build date, not a normative SOP revision date.

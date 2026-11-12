@@ -29,6 +29,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Validate schema regression tests
+        run: python build/test_build.py
+
       - name: Generate terms.js + palette.css from data/
         run: python build/build.py
 

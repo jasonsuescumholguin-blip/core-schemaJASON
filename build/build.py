@@ -14,6 +14,7 @@ Standard library only - no pip install needed.
 import csv
 import json
 import os
+import re
 from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,7 +30,7 @@ REQ = {"Required": "required", "Conditional": "conditional",
 
 def req_of(v):
     v = (v or "").strip()
-    return REQ.get(v, (v.lower().split()[0] if v else "optional"))
+    return REQ[v]
 
 
 def value_scheme_href(s):
@@ -75,11 +76,51 @@ def split_list(v):
 
 
 def read_rows(path):
-    with open(path, encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+        if not rows or any(None in row or any(v is None for v in row.values()) for row in rows):
+            raise ValueError(f"{path}: empty or malformed CSV rows")
+        return rows
+
+
+def validate(groups, schema):
+    group_columns = {"id", "name", "role", "blurb", "fill", "accent", "ink", "order"}
+    schema_columns = {"element_id", "name", "group", "obligation", "datatype", "occurrence",
+                      "format", "value_scheme", "allowed_values", "examples", "maps_to",
+                      "match_type", "definition", "curation_note"}
+    if not groups or not schema:
+        raise ValueError("Groups and schema must contain rows")
+    group_ids, term_ids = set(), set()
+    for g in groups:
+        if not group_columns.issubset(g):
+            raise ValueError("groups.csv: missing columns")
+        if not re.fullmatch(r"[a-z][a-z0-9_-]*", g["id"]) or g["id"] in group_ids:
+            raise ValueError(f"Invalid or duplicate group ID: {g['id']}")
+        group_ids.add(g["id"])
+        int(g["order"])
+        if not g["name"].strip():
+            raise ValueError("Group name is required")
+        for color in ("fill", "accent", "ink"):
+            if not re.fullmatch(r"#[0-9a-fA-F]{6}", g[color]):
+                raise ValueError(f"Invalid {color} colour for {g['id']}")
+    for r in schema:
+        if not schema_columns.issubset(r):
+            raise ValueError("schema.csv: missing columns")
+        key = r["element_id"]
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", key) or key in term_ids:
+            raise ValueError(f"Invalid or duplicate element ID: {key}")
+        term_ids.add(key)
+        if r["group"] not in group_ids:
+            raise ValueError(f"{key}: unknown group {r['group']!r}; use a groups.csv ID")
+        if r["obligation"] not in REQ:
+            raise ValueError(f"{key}: unsupported obligation {r['obligation']!r}")
+        if not r["name"].strip() or not r["definition"].strip():
+            raise ValueError(f"{key}: name and definition are required")
 
 
 def build_terms(groups, schema):
+    validate(groups, schema)
     facets = []
     for g in sorted(groups, key=lambda x: int(x.get("order") or 0)):
         facets.append({
@@ -106,6 +147,7 @@ def build_terms(groups, schema):
         terms.append({
             "key": (r.get("element_id") or "").strip(),
             "name": r["name"], "facet": facet, "required": req_of(r["obligation"]),
+            "occurrence": r.get("occurrence") or "",
             "type": r.get("datatype") or "", "format": (r.get("format") or "").strip(),
             "definition": r.get("definition") or "",
             "values": split_list(r.get("allowed_values")),
